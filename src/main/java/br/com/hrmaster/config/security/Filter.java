@@ -1,12 +1,8 @@
 package br.com.hrmaster.config.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,9 +18,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class Filter {
 
-    @Autowired
-    CustomEmployeeDetailsService CustomEmployeeDetailsService;
-
     @Bean
     SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
         return http.csrf((AbstractHttpConfigurer::disable))
@@ -32,9 +25,8 @@ public class Filter {
                                 "/h2-console/**",
                                 "/hr/register",
                                 "/register",
-                                "/login",
-                                "/do-login",
                                 "/vendor/**",
+                                "/home/dashboard",
                                 "/css/**",
                                 "/js/**")
                         .permitAll()
@@ -44,12 +36,11 @@ public class Filter {
                     h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
                 })
                 .formLogin(login -> login
-                        .loginPage("/login")
+                        .loginPage("/hr/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
                         .loginProcessingUrl("/do-login")
-                        .defaultSuccessUrl("/home/dashboard")
-                        .failureForwardUrl("/login?error")
+                        .defaultSuccessUrl("/hr/dashboard", true)
                         .permitAll())
 
                 .logout(LogoutConfigurer::permitAll)
@@ -67,19 +58,10 @@ public class Filter {
         return new CustomEmployeeDetailsService();
     }
 
-//    @Bean
-//    public DaoAuthenticationProvider authenticationProvider() {
-//        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(CustomEmployeeDetailsService);
-//        authenticationProvider.setPasswordEncoder(passwordEncoder());
-//        return authenticationProvider;
-//    }
-
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
-        AuthenticationProvider authenticationProvider = new EmployeeAuthenticationProvider();
-        authenticationManagerBuilder.authenticationProvider(authenticationProvider);
+        authenticationManagerBuilder.userDetailsService(userDetailsService()).passwordEncoder(passwordEncoder());
         return authenticationManagerBuilder.build();
     }
 }
