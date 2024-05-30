@@ -1,5 +1,6 @@
 package br.com.hrmaster.model;
 
+import br.com.hrmaster.DTO.EmployeeDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -12,16 +13,15 @@ import javax.management.relation.Role;
 import java.util.Collection;
 import java.util.UUID;
 
+@Entity
 @Getter
 @Setter
-@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 public class Employee {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Email
     @Column(nullable = false)
@@ -41,4 +41,15 @@ public class Employee {
 
     @Column(nullable = false)
     private String roles;
+
+    @OneToOne(mappedBy = "employeeToSet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private PasswordResetToken passwordResetToken;
+
+    public Employee(EmployeeDTO employeeDTO, String password) {
+        this.email = employeeDTO.email();
+        this.password = password;
+        this.name = employeeDTO.name();
+        this.dtNascimento = employeeDTO.dtNascimento();
+        this.cargo = employeeDTO.cargo();
+    }
 }

@@ -24,7 +24,11 @@ public class Filter {
                 .authorizeHttpRequests((request) -> request.requestMatchers(
                                 "/h2-console/**",
                                 "/hr/register",
+                                "/hr/pgforgot_password",
                                 "/register",
+                                "/forgot-password",
+                                "/resetPassword/**",
+                                "/hr/resetPassword/**",
                                 "/vendor/**",
                                 "/home/dashboard",
                                 "/css/**",

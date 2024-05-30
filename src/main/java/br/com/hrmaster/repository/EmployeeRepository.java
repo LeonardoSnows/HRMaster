@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface EmployeeRepository extends CrudRepository<Employee, UUID> {
+public interface EmployeeRepository extends CrudRepository<Employee, Long> {
     List<Employee> findByEmail(String email);
+
     Employee findByEmailIgnoreCase(String email);
 }
