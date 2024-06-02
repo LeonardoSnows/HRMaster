@@ -1,8 +1,11 @@
 package br.com.hrmaster.controller;
 
+import br.com.hrmaster.DTO.CompanyDTO;
 import br.com.hrmaster.DTO.EmployeeDTO;
+import br.com.hrmaster.model.Company;
 import br.com.hrmaster.model.Employee;
 import br.com.hrmaster.model.PasswordResetToken;
+import br.com.hrmaster.service.impl.CompanyServiceImpl;
 import br.com.hrmaster.service.impl.EmployeeServiceImpl;
 import br.com.hrmaster.service.impl.TokenServiceImpl;
 import jakarta.transaction.Transactional;
@@ -18,13 +21,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
 @Controller
 @RequiredArgsConstructor
 public class EmployeeController {
 
+    Employee employee;
+
     @Autowired
     EmployeeServiceImpl employeeServiceImpl;
+
+    @Autowired
+    CompanyServiceImpl companyServiceImpl;
 
     @Autowired
     TokenServiceImpl tokenServiceImpl;
@@ -42,7 +51,7 @@ public class EmployeeController {
         return "login/forgotPassword";
     }
 
-    @GetMapping("/hr/register")
+    @GetMapping("/hr/register/employee")
     public String pgRegister(RedirectAttributes redirectAttributes) {
         return "register/register";
     }
@@ -86,28 +95,71 @@ public class EmployeeController {
         return "redirect:/hr/login";
     }
 
-    @PostMapping("/register")
+    @PostMapping("/register/employee")
     @Transactional
-    public String setEmployees(EmployeeDTO employeeDTO, RedirectAttributes redirectAttributes) {
+    public String registerEmployee(EmployeeDTO employeeDTO, RedirectAttributes redirectAttributes) {
         String hashPwd = passwordEncoder.encode(employeeDTO.password());
         Employee employee = new Employee(employeeDTO, hashPwd);
         employee.setRoles("USER");
 
         try {
-            Employee employeeSaved = employeeServiceImpl.registerEmployee(employee);
-            redirectAttributes.addFlashAttribute("success", "Seus dados foram salvos no banco de dados !");
+            employeeServiceImpl.registerEmployee(employee);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("success", "Seus dados foram salvos no banco de dados !");
+            System.out.println(e.getMessage());
         }
         return "redirect:/hr/login";
     }
 
-    @RequestMapping("/hr/dashboard")
-    public String login() {
+    @PostMapping("/register/company")
+    @Transactional
+    public String registerCompany(CompanyDTO companyDTO) {
+        try {
+            companyServiceImpl.saveCompany(new Company(companyDTO));
+            return "redirect:/hr/register/company";
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return "redirect:/hr/register/company";
+        }
+    }
+
+    @GetMapping("/hr/dashboard")
+    public String login(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        long employeeCount = employeeServiceImpl.countEmployee();
+        model.addAttribute("employeesCount", employeeCount);
+
+        String mail = SecurityContextHolder.getContext().getAuthentication().getName();
+        this.employee = employeeServiceImpl.getEmployeeByEmail(mail);
+        model.addAttribute("name", employee.getName());
+
+        model.addAttribute("email", employee.getEmail());
+
         if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
             return "redirect:/login";
         }
+
         return "home/index";
     }
+
+    @GetMapping("/hr/profile")
+    public String profilePage(Model model) {
+        model.addAttribute("name", employee.getName());
+        model.addAttribute("cargo", employee.getCargo());
+        model.addAttribute("address", employee.getAddress());
+        model.addAttribute("company", employee.getCompany().getName());
+        model.addAttribute("postcode", employee.getCompany().getPostcode());
+        model.addAttribute("state", employee.getCompany().getState());
+        model.addAttribute("area", employee.getArea());
+        model.addAttribute("email", employee.getEmail());
+
+        return "profile/perfil";
+    }
+
+    @GetMapping("/hr/register/company")
+    public String companyRegister(Model model) {
+
+        return "register/registerCompany";
+    }
+
 }

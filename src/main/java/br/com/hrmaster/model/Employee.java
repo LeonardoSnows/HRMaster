@@ -18,6 +18,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "TB_EMPLOYEE")
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,6 +42,14 @@ public class Employee {
 
     @Column(nullable = false)
     private String roles;
+
+    private String address;
+
+    private String area;
+
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @OneToOne(mappedBy = "employeeToSet", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private PasswordResetToken passwordResetToken;

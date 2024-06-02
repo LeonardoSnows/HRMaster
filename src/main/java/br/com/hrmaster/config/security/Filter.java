@@ -23,16 +23,16 @@ public class Filter {
         return http.csrf((AbstractHttpConfigurer::disable))
                 .authorizeHttpRequests((request) -> request.requestMatchers(
                                 "/h2-console/**",
-                                "/hr/register",
+                                "/hr/register/employee",
                                 "/hr/pgforgot_password",
-                                "/register",
+                                "/register/employee",
                                 "/forgot-password",
                                 "/resetPassword/**",
                                 "/hr/resetPassword/**",
                                 "/vendor/**",
-                                "/home/dashboard",
                                 "/css/**",
-                                "/js/**")
+                                "/js/**"
+                                )
                         .permitAll()
                         .anyRequest()
                         .authenticated()

@@ -12,4 +12,5 @@ public interface EmployeeRepository extends CrudRepository<Employee, Long> {
     List<Employee> findByEmail(String email);
 
     Employee findByEmailIgnoreCase(String email);
+
 }
